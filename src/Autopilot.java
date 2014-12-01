@@ -2,11 +2,11 @@ class Autopilot
 {
 	//set these variable to your preferences
 	public static final String resolution ="1024x768";
-	public static final String save_path ="h:/fg_save";
+	public static final String save_path ="/Users/faizshukri/Development/Java/flightgear/fg_save";
 	
 	//these paths are the settings for DCS-PCs
-	public static final String fgfsRoot = (FgConnect.isFg3())? "C:/Program Files/FlightGear":"C:/Program Files (x86)/FlightGear";
-	public static final String fgfsBinary = fgfsRoot+(FgConnect.isFg3()?"/bin/Win64/fgfs.exe":"/bin/Win32/fgfs.exe");
+	public static final String fgfsRoot = "/Applications/FlightGear.app";
+	public static final String fgfsBinary = fgfsRoot+"/Contents/MacOS/fgfs";
 	
 	//other settings like aircraft etc
 	public static final String airport = "KSFO";
@@ -21,10 +21,10 @@ class Autopilot
 		  if (args.length >= 3)
 			  myPlane.Init(args[1], args[2]);
 		  else{
-			  myPlane.Init("\""+fgfsBinary+"\" --fg-root=\"" + fgfsRoot + "/data\"  "+
+			  myPlane.Init("\""+fgfsBinary+"\" --fg-root=\"" + fgfsRoot + "/Contents/Resources/data\"  "+
 					  //"--fg-scenery=\"" +  fgfsRoot + "/data/scenery"+" "+
 					       		(FgConnect.isFg3()?"--airport=":"--airport-id=") + airport + " "+
-					           "--aircraft=c172p --control=mouse " +
+					           "--aircraft=c172p " +
 					           (FgConnect.isFg3()?"--disable-ai-traffic ":"")+
 					           //"--enable-random-objects " +
 					           "--enable-hud " +
@@ -42,7 +42,8 @@ class Autopilot
 		  
 		  }
 
-		  examp.takeOff((FgConnect.isFg3()?40.:60.),300.,10);
+		  //examp.takeOff((FgConnect.isFg3()?40.:60.),300.,10);
+		  myPlane.load("turned_to_ALCA.sav");
 		  examp.manoeuvre();
 	} catch (FgException e) {
 		e.printStackTrace();

@@ -475,7 +475,7 @@ public class FgAircraft {
 	 * @throws FgException if FlightGear failed to complete this command.
 	 */
 	public void load(String name) throws FgException {
-		flight.load(name);flight.setValue("/sim/time/warp", 15000);
+		flight.load(name);flight.setValue("/sim/time/warp", (12+7-java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY))*3600);
 		engineOn(true);
 	}
 
