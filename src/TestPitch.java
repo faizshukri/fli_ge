@@ -7,10 +7,10 @@ public class TestPitch {
 	Examples examp = new Examples(myPlane);
 	
 	public TestPitch() throws FgException {
-		  myPlane.Init("\""+Autopilot.fgfsBinary+"\" --fg-root=\"" + Autopilot.fgfsRoot + "/data\"  "+
+		  myPlane.Init("\""+Autopilot.fgfsBinary+"\" --fg-root=\"" + Autopilot.fgfsRoot + "/Contents/Resources/data\"  "+
 				  //"--fg-scenery=\"" +  fgfsRoot + "/data/scenery"+" "+
 				       		(FgConnect.isFg3()?"--airport=":"--airport-id=") + Autopilot.airport + " "+
-				           "--aircraft=c172p --control=mouse " +
+				           "--aircraft=c172p " +
 				           (FgConnect.isFg3()?"--disable-ai-traffic ":"")+
 				           //"--enable-random-objects " +
 				           "--enable-hud " +
