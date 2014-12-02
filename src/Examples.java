@@ -27,19 +27,19 @@ import javax.swing.WindowConstants;
 public class Examples {
 	//Global Variables
 	    //coordinates (longitude and altitude of Alcatraz)
-		/**longitude of Alcatraz (following Wikipedia it is 122°25'21"W)
+		/**longitude of Alcatraz (following Wikipedia it is 12225'21"W)
 	 	 *(a famous prison island near San Francisco) */
 		public final double ALCATRAZ_LONG = -122.42225;  //longitude
-		/**laltitude of Alcatraz (following Wikipedia it is 37°49'35"N)
+		/**laltitude of Alcatraz (following Wikipedia it is 3749'35"N)
 	 	 *(afamous prison island near San Francisco) */
 		public final double ALCATRAZ_LALT = 37.82638889;	//laltitude
 
 		//coordinates (longitude and laltitude) of the Golden gate bridge
 		//(I don't know if the coordinates are correct -- they are from Wikipedia)
-		/**longitude of the Golden Gate Bridge (following Wikipedia it is 120°28'42")
+		/**longitude of the Golden Gate Bridge (following Wikipedia it is 12028'42")
 	 	 */	
 		public final double GOLDEN_GATE_LONG = -122.47833334;  //longitude
-		/**laltitude of the Golden Gate Bridge (following Wikipedia it is 37°49'3")
+		/**laltitude of the Golden Gate Bridge (following Wikipedia it is 3749'3")
 	 	 */	
 		public final double GOLDEN_GATE_LALT =   37.818175;	//laltitude
 		//an instance of an FgAircraft
@@ -685,7 +685,7 @@ synchronized void sleep(int duration)
 			airSpeed85();
 			//hold/change yaw to the current direction
 			holdYaw(target_dir,40);
-			//climb with a rate of 10°
+			//climb with a rate of 10
 			pitch(10);
 	
 			//if we are near the cruising altitude, change state
@@ -740,7 +740,7 @@ synchronized void sleep(int duration)
 			}
 			
 			// If we have reached the direction to Alcatraz
-			// (up to 2° difference, since larger degrees will immediately get added to the integrator variable
+			// (up to 2 difference, since larger degrees will immediately get added to the integrator variable
             // by holdYaw and we'll end up overshooting by quite a bit until the integrator is drained).
             //
 			//Finally, go to the next control state
@@ -772,7 +772,7 @@ synchronized void sleep(int duration)
 			//System.out.println("distance "+Math.abs(a.getLongitudeDeg()-ALCATRAZ_LONG)+"  "+Math.abs(a.getLatiduteDeg()-ALCATRAZ_LALT));
 			
 			//If the airplane is "close enough" to ALcatraz
-			//(in a square of 0.02° around the island)
+			//(in a square of 0.02 around the island)
 			//change state
 			if(Math.abs(a.getLongitudeDeg()-ALCATRAZ_LONG)<0.02 && Math.abs(a.getLatiduteDeg()-ALCATRAZ_LALT)<0.02)
 			{
@@ -803,7 +803,7 @@ synchronized void sleep(int duration)
 			airSpeed85();
 			//hold/change yaw to the current direction
 			holdYaw(target_dir,40);
-			//climb with a rate of 10°
+			//climb with a rate of 10
 			pitch(-10);
 	
 			//if we are near the cruising altitude, change state
