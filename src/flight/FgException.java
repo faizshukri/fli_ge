@@ -1,3 +1,4 @@
+package flight;
 
 public class FgException extends Exception {
 

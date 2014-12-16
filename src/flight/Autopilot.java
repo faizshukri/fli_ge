@@ -1,4 +1,6 @@
-class Autopilot
+package flight;
+
+public class Autopilot
 {
 	//set these variable to your preferences
 	public static final String resolution ="1024x768";
