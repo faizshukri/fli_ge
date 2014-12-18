@@ -27,22 +27,15 @@ import javax.swing.WindowConstants;
   */ 
 public class Examples {
 	//Global Variables
-	    //coordinates (longitude and altitude of Alcatraz)
-		/**longitude of Alcatraz (following Wikipedia it is 12225'21"W)
-	 	 *(a famous prison island near San Francisco) */
-		public final double ALCATRAZ_LONG = -122.42225;  //longitude
-		/**laltitude of Alcatraz (following Wikipedia it is 3749'35"N)
-	 	 *(afamous prison island near San Francisco) */
-		public final double ALCATRAZ_LALT = 37.82638889;	//laltitude
-
-		//coordinates (longitude and laltitude) of the Golden gate bridge
-		//(I don't know if the coordinates are correct -- they are from Wikipedia)
-		/**longitude of the Golden Gate Bridge (following Wikipedia it is 12028'42")
-	 	 */	
-		public final double GOLDEN_GATE_LONG = -122.47833334;  //longitude
-		/**laltitude of the Golden Gate Bridge (following Wikipedia it is 3749'3")
-	 	 */	
-		public final double GOLDEN_GATE_LALT =   37.818175;	//laltitude
+		public final double WAY_1_LONG = -122.3947522; //longitude
+		public final double WAY_1_LAT =   37.64583148;	//laltitude
+		
+		public final double WAY_2_LONG = -122.3796872; //longitude
+		public final double WAY_2_LAT =   37.62240877;	//laltitude
+		
+		public final double WAY_3_LONG = -122.4379068; //longitude
+		public final double WAY_3_LAT =   37.68217546;	//laltitude
+		
 		//an instance of an FgAircraft
 		private final FgAircraft a;
 	
@@ -77,8 +70,8 @@ public class Examples {
 		}
 	
 	/** Control states, used in these two examples. */
-	enum controlStates { TO_TAXI, TO_TAXI_2, TO_AIR, INIT, CLIMB, DESCEND, TO_ALCA, TURN_TO_ALCA, OVER_ALCA, TO_GOLD, LOW, CLOSING }
-
+	enum controlStates { TO_TAXI, TO_TAXI_2, TO_AIR, INIT, CLIMB, DESCEND, TO_WAY_1, TURN_TO_WAY_1, OVER_WAY_1, 
+						 TO_WAY_2, TURN_TO_WAY_2, OVER_WAY_2, TO_WAY_3, TURN_TO_WAY_3, OVER_WAY_3, CLOSING }
 	// In the takeoff example, the following states are used
 	// TO_TAXI taxiing slow, using rudder to keep direction
     // TO_TAXI_2 taxiing fast
@@ -657,6 +650,9 @@ synchronized void sleep(int duration)
 	//initialisation
 	double target_dir=0, degreeToTurn=0;
 	
+	// prevState store the last state before a button pressed (TWO or THREE)
+	controlStates prevState = null;
+	
 	//the control loop
 	while(manoeuvre)
 	{
@@ -692,22 +688,24 @@ synchronized void sleep(int duration)
 			//if we are near the cruising altitude, change state
 			if(a.getAltitudeFt()>alt-75)
 			{
-				state=controlStates.TURN_TO_ALCA; //set new state
-				System.out.println("reached the cruising altitude, turning to ALCA");
+				if(prevState == null) state = controlStates.TURN_TO_WAY_1; //set new state
+				else state = prevState;
+				
+				System.out.println("reached the cruising altitude, turning to "+state.toString());
 				controllerReset();
 				frame.setTitle(state.toString());
 			}
 			break;
 			
-		case TURN_TO_ALCA:  //turn to fly to Alcatraz
+		case TURN_TO_WAY_1:  //turn to fly to WAYPOINT_1
 			//hold the altitude (modify the elevator)
 			holdAlt(alt);
 			//hold the speed at 85 (modify the throttle)
 			airSpeed85();
 			//get the current heading
 			double currentHdg = a.getHeadingDeg();
-			//calculate the direction to Alcatraz 
-			target_dir = calc_dir(a.getLongitudeDeg(),a.getLatiduteDeg(),ALCATRAZ_LONG,ALCATRAZ_LALT);
+			//calculate the direction to WAYPOINT_1 
+			target_dir = calc_dir(a.getLongitudeDeg(),a.getLatiduteDeg(),WAY_1_LONG,WAY_1_LAT);
 			// target_dir is the desired direction (0..360)
 			
 			//calculate the angle between the target direction 
@@ -725,37 +723,32 @@ synchronized void sleep(int duration)
             // the one to the target, factor 3 makes for a rather steep turn. 
 			double factor=3;
 			
+			holdYaw(target_dir,40);
 			//doing a left turn
 			if(degreeToTurn<-tolerance)
 			{
-                // keep the roll angle proportional to the difference between the current direction and the one to Alcataz;
+                // keep the roll angle proportional to the difference between the current direction and the one to WAYPOINT_1;
                 // the maximal roll angle is 25 degrees.
 				roll(Math.max(-15,(degreeToTurn-20)/factor),80);
 			}
 			//doing a right turn
 			else if (degreeToTurn>tolerance)
 			{
-				// keep the roll angle proportional to the difference between the current direction and the one to Alcataz;
+				// keep the roll angle proportional to the difference between the current direction and the one to WAYPOINT_1;
                 // the maximal roll angle is 25 degrees.
 				roll(Math.min(15,(degreeToTurn+20)/factor),80);
 			}
 			
-			// If we have reached the direction to Alcatraz
-			// (up to 2 difference, since larger degrees will immediately get added to the integrator variable
-            // by holdYaw and we'll end up overshooting by quite a bit until the integrator is drained).
-            //
-			//Finally, go to the next control state
-			if (Math.abs(degreeToTurn) < 2)
-			{
-				state = controlStates.TO_ALCA;  //set new control state
-				System.out.println("turn complete, flying to ALCA");
+			if (Math.abs(degreeToTurn) < 2) {
+				state = controlStates.TO_WAY_1;  //set new control state
+				System.out.println("turn complete, flying to WAY_1");
 				controllerReset(); //reset yaw integrator/differentiator values
-				//a.save("turned_to_alca_2014.sav");// you can call this to save a position. This will only work if after starting a simulator you never did a load.
 				frame.setTitle(state.toString());
 			}
-			break;		
 			
-		case TO_ALCA:  // fly to Alcatraz
+			break;
+		
+		case TO_WAY_1:  // fly to WAYPOINT_1
 			//hold the altitude still at the given cruising altitude (using the elevator)
 			holdAlt(alt);
 			//hold the target still at 85 kts (modify throttle)
@@ -763,38 +756,195 @@ synchronized void sleep(int duration)
 			//stabilise the roll (using ailerons)
 			roll(0,80);
 			
-			//calculate the direction to Alcatraz 
-			target_dir = calc_dir(a.getLongitudeDeg(),a.getLatiduteDeg(),ALCATRAZ_LONG,ALCATRAZ_LALT);
+			//calculate the direction to WAY_POINT_1 
+			target_dir = calc_dir(a.getLongitudeDeg(),a.getLatiduteDeg(),WAY_1_LONG,WAY_1_LAT);
 			// dir is the desired direction (0..360), currentHdg is the current heading.
 			
-			//make small changes in direction to hold the direction to Alcatraz
+			//make small changes in direction to hold the direction to WAY_POINT_1
 			holdYaw(target_dir,40);
 			
-			//System.out.println("distance "+Math.abs(a.getLongitudeDeg()-ALCATRAZ_LONG)+"  "+Math.abs(a.getLatiduteDeg()-ALCATRAZ_LALT));
-			
-			//If the airplane is "close enough" to ALcatraz
-			//(in a square of 0.02 around the island)
+			//If the airplane is "close enough" to WAY_POINT_1
 			//change state
-			if(Math.abs(a.getLongitudeDeg()-ALCATRAZ_LONG)<0.02 && Math.abs(a.getLatiduteDeg()-ALCATRAZ_LALT)<0.02)
+			if(Math.abs(a.getLongitudeDeg()-WAY_1_LONG)<0.02 && Math.abs(a.getLatiduteDeg()-WAY_1_LAT)<0.02)
 			{
-				state=controlStates.OVER_ALCA;  //set new state
+				state=controlStates.OVER_WAY_1;  //set new state
 				frame.setTitle(state.toString());
 			}
 			break;
 			
-		case OVER_ALCA:  //manoeuvre over Alcatraz
-			//missing at the moment
-			System.out.println("ALCA reached");
-			a.pause(true); //pause the flight simulator
-			manoeuvre=false; //leave the control loop
-			frame.setTitle("at Alca");
+		case OVER_WAY_1:  //manoeuvre over WAYPOINT_1
+			System.out.println("WAY_1 reached");
+
+			// Set flag of toWaypoint1AfterBtnPress to false
+			if(toWaypoint1AfterBtnPress) toWaypoint1AfterBtnPress = false;
+
+			// Continue to waypoint 2
+			state=controlStates.TURN_TO_WAY_2;
+			frame.setTitle(state.toString());
+			break;
+			
+		case TURN_TO_WAY_2:  //turn to fly to WAYPOINT_2
+			//hold the altitude (modify the elevator)
+			holdAlt(alt);
+			//hold the speed at 85 (modify the throttle)
+			airSpeed85();
+			//get the current heading
+			currentHdg = a.getHeadingDeg();
+			//calculate the direction to WAYPOINT_1 
+			target_dir = calc_dir(a.getLongitudeDeg(),a.getLatiduteDeg(),WAY_2_LONG,WAY_2_LAT);
+			// target_dir is the desired direction (0..360)
+
+			//calculate the angle between the target direction 
+			//and the current direction
+			degreeToTurn = (target_dir-currentHdg);
+			//normalise the degree to a value between -180 and 180
+			if (degreeToTurn < -180) degreeToTurn +=360;
+			else
+				if (degreeToTurn > 180) degreeToTurn-=360;
+			// at this point, degreeToTurn is -180 .. 180 degrees
+
+			// tolerance is the tolerance for the roll degree.
+			tolerance = 4;
+            // factor determines how sensitive we are to the difference between plane heading and
+            // the one to the target, factor 3 makes for a rather steep turn. 
+			factor=3;
+			
+			holdYaw(target_dir,40);
+			//doing a left turn
+			if(degreeToTurn<-tolerance)
+			{
+                // keep the roll angle proportional to the difference between the current direction and the one to WAYPOINT_2;
+                // the maximal roll angle is 25 degrees.
+				roll(Math.max(-15,(degreeToTurn-20)/factor),80);
+			}
+			//doing a right turn
+			else if (degreeToTurn>tolerance)
+			{
+				// keep the roll angle proportional to the difference between the current direction and the one to WAYPOINT_2;
+                // the maximal roll angle is 25 degrees.
+				roll(Math.min(15,(degreeToTurn+20)/factor),80);
+			}
+			
+			if (Math.abs(degreeToTurn) < 2)
+			{
+				state = controlStates.TO_WAY_2;  //set new control state
+				System.out.println("turn complete, flying to WAY_2");
+				controllerReset(); //reset yaw integrator/differentiator values
+				frame.setTitle(state.toString());
+			}
+			break;
+			
+		case TO_WAY_2:  // fly to WAYPOINT_2
+			//hold the altitude still at the given cruising altitude (using the elevator)
+			holdAlt(alt);
+			//hold the target still at 85 kts (modify throttle)
+			airSpeed85();
+			//stabilise the roll (using ailerons)
+			roll(0,80);
+			
+			//calculate the direction to WAY_POINT_2 
+			target_dir = calc_dir(a.getLongitudeDeg(),a.getLatiduteDeg(),WAY_2_LONG,WAY_2_LAT);
+			// dir is the desired direction (0..360), currentHdg is the current heading.
+			
+			//make small changes in direction to hold the direction to WAY_POINT_2
+			holdYaw(target_dir,40);
+			
+			//If the airplane is "close enough" to WAY_POINT_2
+			//change state
+			if(Math.abs(a.getLongitudeDeg()-WAY_2_LONG)<0.02 && Math.abs(a.getLatiduteDeg()-WAY_2_LAT)<0.02)
+			{
+				state=controlStates.OVER_WAY_2;  //set new state
+				frame.setTitle(state.toString());
+			}
+			break;
+			
+		case OVER_WAY_2:  //manoeuvre over WAYPOINT_2
+			System.out.println("WAY_2 reached");
+
+			// Continue to waypoint 3
+			state=controlStates.TURN_TO_WAY_3;
+			frame.setTitle(state.toString());
+			break;
+			
+		case TURN_TO_WAY_3:  //turn to fly to WAYPOINT_3
+			//hold the altitude (modify the elevator)
+			holdAlt(alt);
+			//hold the speed at 85 (modify the throttle)
+			airSpeed85();
+			//get the current heading
+			currentHdg = a.getHeadingDeg();
+			//calculate the direction to WAYPOINT_3
+			target_dir = calc_dir(a.getLongitudeDeg(),a.getLatiduteDeg(),WAY_3_LONG,WAY_3_LAT);
+			// target_dir is the desired direction (0..360)
+
+			//calculate the angle between the target direction 
+			//and the current direction
+			degreeToTurn = (target_dir-currentHdg);
+			if (degreeToTurn < -180) degreeToTurn +=360;
+			else
+				if (degreeToTurn > 180) degreeToTurn-=360;
+			// at this point, degreeToTurn is -180 .. 180 degrees
+
+			// tolerance is the tolerance for the roll degree.
+			tolerance = 4;
+            // factor determines how sensitive we are to the difference between plane heading and
+            // the one to the target, factor 3 makes for a rather steep turn. 
+			factor=3;
+			
+			holdYaw(target_dir,40);
+			//doing a left turn
+			if(degreeToTurn<-tolerance)
+			{
+                // keep the roll angle proportional to the difference between the current direction and the one to WAYPOINT_3;
+                // the maximal roll angle is 25 degrees.
+				roll(Math.max(-15,(degreeToTurn-20)/factor),80);
+			}
+			//doing a right turn
+			else if (degreeToTurn>tolerance)
+			{
+				// keep the roll angle proportional to the difference between the current direction and the one to WAYPOINT_3;
+                // the maximal roll angle is 25 degrees.
+				roll(Math.min(15,(degreeToTurn+20)/factor),80);
+			}
+			
+			if (Math.abs(degreeToTurn) < 2)
+			{
+				state = controlStates.TO_WAY_3;  //set new control state
+				System.out.println("turn complete, flying to WAY_3");
+				controllerReset(); //reset yaw integrator/differentiator values
+				frame.setTitle(state.toString());
+			}
+			break;
+			
+		case TO_WAY_3:  // fly to WAYPOINT_3
+			//hold the altitude still at the given cruising altitude (using the elevator)
+			holdAlt(alt);
+			//hold the target still at 85 kts (modify throttle)
+			airSpeed85();
+			//stabilise the roll (using ailerons)
+			roll(0,80);
+			
+			//calculate the direction to WAY_POINT_3 
+			target_dir = calc_dir(a.getLongitudeDeg(),a.getLatiduteDeg(),WAY_3_LONG,WAY_3_LAT);
+			// dir is the desired direction (0..360), currentHdg is the current heading.
+			
+			//make small changes in direction to hold the direction to WAY_POINT_3
+			holdYaw(target_dir,40);
+			
+			//If the airplane is "close enough" to WAY_POINT_3
+			//change state
+			if(Math.abs(a.getLongitudeDeg()-WAY_3_LONG)<0.02 && Math.abs(a.getLatiduteDeg()-WAY_3_LAT)<0.02)
+			{
+				state=controlStates.OVER_WAY_3;  //set new state
+				frame.setTitle(state.toString());
+			}
+			break;
+			
+		case OVER_WAY_3:  //manoeuvre over WAYPOINT_3
+			System.out.println("WAY_3 reached");
+			frame.setTitle("at WAY_3");
 			System.out.println("END");
-			break;
-		case TO_GOLD: //sink and fly in direction of Golden Gate Bridge
-			//missing at the moment
-			break;
-		case LOW:  //low-level flight
-			//missing at the moment
+			state=controlStates.CLOSING;
 			break;
 		case DESCEND:  // descend to alt
 			controllerReset();
@@ -810,9 +960,12 @@ synchronized void sleep(int duration)
 			//if we are near the cruising altitude, change state
 			if(a.getAltitudeFt()<alt+75)
 			{
-				state=controlStates.TURN_TO_ALCA; //set new state
-				System.out.println("reached the cruising altitude, turning to ALCA");
+				if(prevState == null) state = controlStates.TURN_TO_WAY_1; //set new state
+				else state = prevState;
+				
+				System.out.println("reached the cruising altitude, turning to "+state.toString());
 				controllerReset();
+				frame.setTitle(state.toString());
 			}
 			break;
 		case CLOSING:
