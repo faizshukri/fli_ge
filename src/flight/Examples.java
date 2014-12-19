@@ -942,9 +942,10 @@ synchronized void sleep(int duration)
 			
 		case OVER_WAY_3:  //manoeuvre over WAYPOINT_3
 			System.out.println("WAY_3 reached");
-			frame.setTitle("at WAY_3");
-			System.out.println("END");
-			state=controlStates.CLOSING;
+
+			// Back to waypoint 1
+			state=controlStates.TURN_TO_WAY_1;
+			frame.setTitle(state.toString());
 			break;
 		case DESCEND:  // descend to alt
 			controllerReset();
