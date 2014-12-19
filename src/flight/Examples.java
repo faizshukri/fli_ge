@@ -42,7 +42,7 @@ public class Examples {
 		/** The integral component of the difference between the desired yaw and the current one */
 		double yawDifferenceIntegral = 0;
 		/** Used by the differential component of rudder position */
-		double prevRudder = Double.NEGATIVE_INFINITY;
+		public double prevRudder = Double.NEGATIVE_INFINITY;
 
 		/** Used by the integral component of the roll controller. */
 		double rollDifferenceIntegral = 0;
