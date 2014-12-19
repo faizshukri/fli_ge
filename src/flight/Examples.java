@@ -481,7 +481,7 @@ public class Examples {
     	airSpeed(85);
     }
 
-  enum Buttons { buttonHigher, buttonLower, applicationExit }
+  enum Buttons { buttonPoint2, buttonPoint3, applicationExit }
 
   /** The main interface. */
   JFrame frame = null;
@@ -506,11 +506,11 @@ public class Examples {
 	 		   final Dimension buttonDim = new Dimension(120,20);
 	 		    frame.getContentPane().setLayout(new FlowLayout());
 	 		    // Add the two buttons
-	 		    JButton buttonHigher = new JButton("Higher");buttonHigher.setPreferredSize(buttonDim);
-	 		     frame.getContentPane().add(buttonHigher);
-	 		     buttonHigher.addActionListener(new ActionListener() {
+	 		    JButton buttonPoint2 = new JButton("TWO");buttonPoint2.setPreferredSize(buttonDim);
+	 		    frame.getContentPane().add(buttonPoint2);
+	 		    buttonPoint2.addActionListener(new ActionListener() {
 	 				public void actionPerformed(@SuppressWarnings("unused") ActionEvent e) {
-	 					buttonListener(Buttons.buttonHigher);
+	 					buttonListener(Buttons.buttonPoint2);
 	 				}});
 	
 	 		     frame.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),"ESC_pressed");
@@ -519,11 +519,11 @@ public class Examples {
 		 		    	   buttonListener(Buttons.applicationExit);
 				    }
 				});
-	 		     JButton buttonLower = new JButton("Lower");buttonLower.setPreferredSize(buttonDim);
-	 		     frame.getContentPane().add(buttonLower);
-	 		     buttonLower.addActionListener(new ActionListener() {
+	 		     JButton buttonPoint3 = new JButton("THREE");buttonPoint3.setPreferredSize(buttonDim);
+	 		     frame.getContentPane().add(buttonPoint3);
+	 		     buttonPoint3.addActionListener(new ActionListener() {
 	  				public void actionPerformed(@SuppressWarnings("unused") ActionEvent e) {
-	  					buttonListener(Buttons.buttonLower);
+	  					buttonListener(Buttons.buttonPoint3);
 	  				}});
 	 		
 	 		     Dimension d = Toolkit.getDefaultToolkit().getScreenSize();	// from http://forum.java.sun.com/thread.jspa?threadID=473285&messageID=2190854
@@ -566,6 +566,8 @@ public class Examples {
 /** crusing altitude, used by the manoeuvre() method. */
  double alt = 1200;	   
  controlStates state = controlStates.INIT;
+ long lastBtnPressedTime = 0;
+ boolean toWaypoint1AfterBtnPress = false;
  
  /** This method is asynchronously called when you press a button; 
   * you are expected to change the appropriate instance variables
@@ -585,18 +587,54 @@ public class Examples {
 		 return;
 	 }
 	 
+	 long currentTime = ( new Date().getTime() ) / 1000;
+	 
 	 switch(buttonNo)
 	 {
-		 case buttonHigher:
-			 System.out.println("Higher pressed");
-			 alt = 2000;
-			 state=controlStates.CLIMB;
+		 case buttonPoint2:
+			 if(toWaypoint1AfterBtnPress) break;
+			 
+			 // Ignore if button press twice or it's already heading toward point 2 or
+			 // when it's moving toward point 1 after other button pressed within 6 seconds
+			 if((state == controlStates.TURN_TO_WAY_2 || state == controlStates.TO_WAY_2) &&
+			    currentTime - lastBtnPressedTime < 6 ) {
+				 System.out.println("Ignored");
+				 break;
+			 }
+				 
+			 // Change to waypoint 1 if other button were pressed within 6 second. Else go to waypoint 2
+			 if(currentTime - lastBtnPressedTime < 6) {
+				 state = controlStates.TURN_TO_WAY_1;
+				 toWaypoint1AfterBtnPress = true;
+			 }
+			 else state=controlStates.TURN_TO_WAY_2;
+			 
+			 System.out.println("P2 pressed");
+			 frame.setTitle(state.toString());
+			 
 			 controllerReset();
 			 break;
-		 case buttonLower:
-			 System.out.println("Lower pressed");
-			 alt = 500;
-			 state=controlStates.DESCEND;
+		 case buttonPoint3:
+			 if(toWaypoint1AfterBtnPress) break;
+			 
+			 // Ignore if button press twice or it's already heading toward point 3 or
+			 // when it's moving toward point 1 after other button pressed within 6 seconds
+			 if( (state == controlStates.TURN_TO_WAY_3 || state == controlStates.TO_WAY_3 ) &&
+				currentTime - lastBtnPressedTime < 6 ) {
+				 System.out.println("Ignored");
+				 break;
+			 }
+			 
+			// Change to waypoint 1 if other button were pressed within 6 second. Else go to waypoint 3
+			 if(currentTime - lastBtnPressedTime < 6) {
+				 state = controlStates.TURN_TO_WAY_1;
+				 toWaypoint1AfterBtnPress = true;
+			 }
+			 else state=controlStates.TURN_TO_WAY_3;
+			 
+			 System.out.println("P3 pressed");
+			 frame.setTitle(state.toString());
+			 
 			 controllerReset();
 			 break;
 		 case applicationExit:
@@ -607,6 +645,7 @@ public class Examples {
 			 state = controlStates.CLOSING;
 			 break;
 	 }
+	 lastBtnPressedTime = currentTime;
 
  }
  
